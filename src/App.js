@@ -606,7 +606,33 @@ function CyclingPage({ activities, gear }) {
   );
 }
 // ── Segments Tab ──────────────────────────────────────────────────────────────
-function SegmentsTab({ segments }) {
+function SegmentsTab({ segments, activities }) {
+  // Build PR map from activity segment efforts
+  const segmentPRs = {};
+  for (const act of activities) {
+    if (!act.segment_efforts) continue;
+    for (const effort of act.segment_efforts) {
+      const id = effort.segment.id;
+      if (!segmentPRs[id]) {
+        segmentPRs[id] = { pr: effort.elapsed_time, attempts: 0, prDate: act.start_date_local };
+      } else {
+        if (effort.elapsed_time < segmentPRs[id].pr) {
+          segmentPRs[id].pr = effort.elapsed_time;
+          segmentPRs[id].prDate = act.start_date_local;
+        }
+      }
+      segmentPRs[id].attempts += 1;
+    }
+  }
+
+  function fmtTime(seconds) {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    if (h > 0) return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+    return `${m}:${String(s).padStart(2, "0")}`;
+  }
+
   if (!segments.length) return (
     <div style={{
       background: "#0d1117", borderRadius: "12px", border: "1px solid #1e2a36",
@@ -632,50 +658,91 @@ function SegmentsTab({ segments }) {
         }}>
           🏁 Starred Segments
         </div>
-        {segments.map((seg, i) => (
-          <div key={seg.id} style={{
-            padding: "14px 20px",
-            borderBottom: i < segments.length - 1 ? "1px solid #1e2a36" : "none",
-            background: i % 2 === 0 ? "transparent" : "#080c10",
-            display: "flex", justifyContent: "space-between", alignItems: "center",
-          }}>
-            <div>
-              <a href={`https://www.strava.com/segments/${seg.id}`} target="_blank" rel="noopener noreferrer"
-                style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: "1rem", color: "#e8edf2", textDecoration: "none" }}
-                onMouseEnter={e => e.currentTarget.style.color = "#fc4c02"}
-                onMouseLeave={e => e.currentTarget.style.color = "#e8edf2"}>
-                {seg.name}
-              </a>
-              <div style={{ display: "flex", gap: "12px", marginTop: "4px" }}>
-                <span style={{ fontSize: "0.75rem", color: "#6b7a8d" }}>
-                  📍 {(seg.distance / 1609.344).toFixed(2)} mi
-                </span>
-                <span style={{ fontSize: "0.75rem", color: "#6b7a8d" }}>
-                  ↑ {seg.total_elevation_gain ? Math.round(seg.total_elevation_gain * 3.28084) : 0} ft
-                </span>
-                <span style={{
-                  fontSize: "0.7rem", color: seg.activity_type === "Run" ? "#4ade80" : "#4a9eff",
-                  fontFamily: "'Barlow Condensed', sans-serif",
-                  fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase"
-                }}>
-                  {seg.activity_type}
-                </span>
+        {segments.map((seg, i) => {
+          const data = segmentPRs[seg.id];
+          return (
+            <div key={seg.id} style={{
+              padding: "14px 20px",
+              borderBottom: i < segments.length - 1 ? "1px solid #1e2a36" : "none",
+              background: i % 2 === 0 ? "transparent" : "#080c10",
+              display: "flex", justifyContent: "space-between", alignItems: "center", gap: "16px",
+            }}>
+              {/* Left: name + meta */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <a href={`https://www.strava.com/segments/${seg.id}`} target="_blank" rel="noopener noreferrer"
+                  style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: "1rem", color: "#e8edf2", textDecoration: "none" }}
+                  onMouseEnter={e => e.currentTarget.style.color = "#fc4c02"}
+                  onMouseLeave={e => e.currentTarget.style.color = "#e8edf2"}>
+                  {seg.name}
+                </a>
+                <div style={{ display: "flex", gap: "12px", marginTop: "4px", flexWrap: "wrap" }}>
+                  <span style={{ fontSize: "0.75rem", color: "#6b7a8d" }}>
+                    📍 {(seg.distance / 1609.344).toFixed(2)} mi
+                  </span>
+                  <span style={{ fontSize: "0.75rem", color: "#6b7a8d" }}>
+                    ↑ {seg.total_elevation_gain ? Math.round(seg.total_elevation_gain * 3.28084) : 0} ft
+                  </span>
+                  <span style={{
+                    fontSize: "0.7rem", color: seg.activity_type === "Run" ? "#4ade80" : "#4a9eff",
+                    fontFamily: "'Barlow Condensed', sans-serif",
+                    fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase"
+                  }}>
+                    {seg.activity_type}
+                  </span>
+                </div>
               </div>
+
+              {/* Middle: PR + attempts */}
+              <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
+                {data ? (
+                  <>
+                    <div style={{ textAlign: "center" }}>
+                      <div style={{ fontSize: "0.65rem", color: "#6b7a8d", textTransform: "uppercase",
+                        letterSpacing: "0.1em", fontFamily: "'Barlow Condensed', sans-serif", marginBottom: "2px" }}>
+                        Your PR
+                      </div>
+                      <div style={{ fontFamily: "'Barlow Condensed', sans-serif",
+                        fontSize: "1.3rem", fontWeight: 700, color: "#fc4c02" }}>
+                        {fmtTime(data.pr)}
+                      </div>
+                      <div style={{ fontSize: "0.65rem", color: "#3d4f61", marginTop: "2px" }}>
+                        {new Date(data.prDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                      </div>
+                    </div>
+                    <div style={{ textAlign: "center" }}>
+                      <div style={{ fontSize: "0.65rem", color: "#6b7a8d", textTransform: "uppercase",
+                        letterSpacing: "0.1em", fontFamily: "'Barlow Condensed', sans-serif", marginBottom: "2px" }}>
+                        Attempts
+                      </div>
+                      <div style={{ fontFamily: "'Barlow Condensed', sans-serif",
+                        fontSize: "1.3rem", fontWeight: 700, color: "#e8edf2" }}>
+                        {data.attempts}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ fontSize: "0.75rem", color: "#3d4f61", fontStyle: "italic" }}>
+                    No attempts in last 100 activities
+                  </div>
+                )}
+              </div>
+
+              {/* Right: View on Strava button */}
+              <a href={`https://www.strava.com/segments/${seg.id}`} target="_blank" rel="noopener noreferrer"
+                style={{
+                  fontFamily: "'Barlow Condensed', sans-serif", fontSize: "0.75rem",
+                  fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase",
+                  color: "#fc4c02", textDecoration: "none",
+                  border: "1px solid #fc4c02", padding: "4px 12px", borderRadius: "4px",
+                  transition: "all 0.2s", whiteSpace: "nowrap",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = "#fc4c02"; e.currentTarget.style.color = "#fff"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#fc4c02"; }}>
+                View on Strava ↗
+              </a>
             </div>
-            <a href={`https://www.strava.com/segments/${seg.id}`} target="_blank" rel="noopener noreferrer"
-              style={{
-                fontFamily: "'Barlow Condensed', sans-serif", fontSize: "0.75rem",
-                fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase",
-                color: "#fc4c02", textDecoration: "none",
-                border: "1px solid #fc4c02", padding: "4px 12px", borderRadius: "4px",
-                transition: "all 0.2s", whiteSpace: "nowrap",
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = "#fc4c02"; e.currentTarget.style.color = "#fff"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#fc4c02"; }}>
-              View on Strava ↗
-            </a>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -815,7 +882,7 @@ function Dashboard({ athlete, activities, gear, segments, onLogout }) {
 
         {/* Segments Tab */}
         {activeTab === "segments" && (
-          <SegmentsTab segments={segments} />
+          <SegmentsTab segments={segments} activities={activities} />
         )}
 
       </div>
