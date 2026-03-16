@@ -730,7 +730,7 @@ function SegmentsTab({ segments, activities }) {
                   </>
                 ) : (
                   <div style={{ fontSize: "0.75rem", color: "#3d4f61", fontStyle: "italic" }}>
-                    No attempts in last 100 activities
+                    Run this segment to see your PR
                   </div>
                 )}
               </div>
