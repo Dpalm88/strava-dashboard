@@ -6,7 +6,7 @@ import {
   getWeeklyMileage, getPRs, getTrainingLoad, getRunStats,
   metersToMiles, secondsToPace, formatDuration, metersToFeet,
   getAthleteStats, extractPRs, getCyclingStats, getGear,
-  getStarredSegments, getSegmentLeaderboard, formatSegmentTime, getTimeDiff,
+  getStarredSegments, getSegmentLeaderboard,
 } from "./stravaApi";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
