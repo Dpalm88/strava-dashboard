@@ -1,0 +1,30 @@
+name: Deploy Strava Dashboard
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build and deploy
+        run: npm run deploy
+        env:
+          REACT_APP_STRAVA_CLIENT_ID: ${{ secrets.REACT_APP_STRAVA_CLIENT_ID }}
+          REACT_APP_STRAVA_CLIENT_SECRET: ${{ secrets.REACT_APP_STRAVA_CLIENT_SECRET }}
+          REACT_APP_REDIRECT_URI: ${{ secrets.REACT_APP_REDIRECT_URI }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
