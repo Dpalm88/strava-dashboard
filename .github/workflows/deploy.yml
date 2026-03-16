@@ -8,12 +8,11 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-        - name: Configure git identity
+      - name: Configure git identity
         run: |
           git config --global user.email "dpalm88@icloud.com"
           git config --global user.name "Dpalm88"
