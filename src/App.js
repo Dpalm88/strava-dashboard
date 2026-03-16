@@ -326,8 +326,8 @@ function LoadingScreen({ message }) {
 
 // ── Tab Nav ──────────────────────────────────────────────────────────────────
 function TabNav({ active, onChange }) {
-  const tabs = ["running", "prs", "cycling"];
-  const labels = { running: "🏃 Running", prs: "🏆 PRs", cycling: "🚴 Cycling" };
+  const tabs = ["running", "cycling"];
+  const labels = { running: "🏃 Running", cycling: "🚴 Cycling" };
   return (
     <div style={{ display: "flex", gap: "4px", background: "#0d1117", borderRadius: "8px", padding: "4px" }}>
       {tabs.map(t => (
