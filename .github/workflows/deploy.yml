@@ -24,9 +24,10 @@ jobs:
 
       - name: Install dependencies
         run: npm install --include=dev
-
       - name: Build and deploy
-        run: npm run deploy
+        run: |
+          git remote set-url origin https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/Dpalm88/strava-dashboard.git
+          npm run deploy
         env:
           REACT_APP_STRAVA_CLIENT_ID: ${{ secrets.REACT_APP_STRAVA_CLIENT_ID }}
           REACT_APP_STRAVA_CLIENT_SECRET: ${{ secrets.REACT_APP_STRAVA_CLIENT_SECRET }}
