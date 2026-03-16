@@ -19,7 +19,7 @@ jobs:
           node-version: 18
 
       - name: Install dependencies
-        run: run: npm install --include=dev
+        run: npm install --include=dev
 
       - name: Build and deploy
         run: npm run deploy
