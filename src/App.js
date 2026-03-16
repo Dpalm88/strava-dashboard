@@ -749,7 +749,7 @@ export default function App() {
   const [activities, setActivities] = useState([]);
   const [loadMsg, setLoadMsg] = useState("Connecting to Strava...");
   const [gear, setGear] = useState({});
-  const [athleteStats, setAthleteStats] = useState(null);
+  const [, setAthleteStats] = useState(null);
 
   async function loadDashboard(accessToken) {
     setLoadMsg("Fetching athlete profile...");
