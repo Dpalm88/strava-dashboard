@@ -697,12 +697,16 @@ function SegmentsTab({ segments, activities }) {
                 {data ? (
                   <>
                     <div style={{ textAlign: "center" }}>
-                      <div style={{ fontSize: "0.65rem", color: "#6b7a8d", textTransform: "uppercase",
-                        letterSpacing: "0.1em", fontFamily: "'Barlow Condensed', sans-serif", marginBottom: "2px" }}>
+                      <div style={{
+                        fontSize: "0.65rem", color: "#6b7a8d", textTransform: "uppercase",
+                        letterSpacing: "0.1em", fontFamily: "'Barlow Condensed', sans-serif", marginBottom: "2px"
+                      }}>
                         Your PR
                       </div>
-                      <div style={{ fontFamily: "'Barlow Condensed', sans-serif",
-                        fontSize: "1.3rem", fontWeight: 700, color: "#fc4c02" }}>
+                      <div style={{
+                        fontFamily: "'Barlow Condensed', sans-serif",
+                        fontSize: "1.3rem", fontWeight: 700, color: "#fc4c02"
+                      }}>
                         {fmtTime(data.pr)}
                       </div>
                       <div style={{ fontSize: "0.65rem", color: "#3d4f61", marginTop: "2px" }}>
@@ -710,12 +714,16 @@ function SegmentsTab({ segments, activities }) {
                       </div>
                     </div>
                     <div style={{ textAlign: "center" }}>
-                      <div style={{ fontSize: "0.65rem", color: "#6b7a8d", textTransform: "uppercase",
-                        letterSpacing: "0.1em", fontFamily: "'Barlow Condensed', sans-serif", marginBottom: "2px" }}>
+                      <div style={{
+                        fontSize: "0.65rem", color: "#6b7a8d", textTransform: "uppercase",
+                        letterSpacing: "0.1em", fontFamily: "'Barlow Condensed', sans-serif", marginBottom: "2px"
+                      }}>
                         Attempts
                       </div>
-                      <div style={{ fontFamily: "'Barlow Condensed', sans-serif",
-                        fontSize: "1.3rem", fontWeight: 700, color: "#e8edf2" }}>
+                      <div style={{
+                        fontFamily: "'Barlow Condensed', sans-serif",
+                        fontSize: "1.3rem", fontWeight: 700, color: "#e8edf2"
+                      }}>
                         {data.attempts}
                       </div>
                     </div>
@@ -905,7 +913,7 @@ export default function App() {
     const ath = await getAthlete(accessToken);
     setAthlete(ath);
     setLoadMsg("Loading activities...");
-    const acts = await getActivities(accessToken, 100);
+    const acts = await getActivities(accessToken, 200);
     setActivities(acts);
     setLoadMsg("Loading stats...");
     const stats = await getAthleteStats(accessToken, ath.id);
