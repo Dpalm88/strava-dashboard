@@ -9,7 +9,8 @@ import {
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
 } from "recharts";
-
+import { getAthlete, getActivities, ... } from './stravaApi';
+import { getAthleteStats, extractPRs, getCyclingStats, getGear } from './stravaApi';
 // ── Map import (dynamic to avoid SSR issues) ────────────────────────────────
 import { MapContainer, TileLayer, Polyline } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -508,6 +509,9 @@ export default function App() {
   const [athlete, setAthlete] = useState(null);
   const [activities, setActivities] = useState([]);
   const [loadMsg, setLoadMsg] = useState("Connecting to Strava...");
+  const [activeTab, setActiveTab] = useState("running");
+  const [gear, setGear] = useState({});
+  const [athleteStats, setAthleteStats] = useState(null);
 
   async function loadDashboard(accessToken) {
     setLoadMsg("Fetching athlete profile...");
@@ -516,6 +520,19 @@ export default function App() {
     setLoadMsg("Loading activities...");
     const acts = await getActivities(accessToken, 100);
     setActivities(acts);
+
+    // Load athlete stats
+    setLoadMsg("Loading stats...");
+    const stats = await getAthleteStats(accessToken, ath.id);
+    setAthleteStats(stats);
+
+    // Load gear for unique bike/shoe IDs
+    const gearIds = [...new Set(acts.filter(a => a.gear_id).map(a => a.gear_id))];
+    const gearResults = await Promise.all(gearIds.map(id => getGear(accessToken, id)));
+    const gearMap = {};
+    gearResults.forEach(g => { if (g?.id) gearMap[g.id] = g; });
+    setGear(gearMap);
+
     setState("dashboard");
   }
 

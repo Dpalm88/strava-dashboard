@@ -156,3 +156,94 @@ export function getRunStats(activities) {
         avgMilesPerRun: runs.length ? (totalMiles / runs.length).toFixed(1) : 0,
     };
 }
+
+// ── Best Efforts & PR data ───────────────────────────────────────────────────
+export async function getActivityWithEfforts(accessToken, id) {
+    return stravaFetch(`/activities/${id}?include_all_efforts=true`, accessToken);
+}
+
+// ── Gear ─────────────────────────────────────────────────────────────────────
+export async function getGear(accessToken, gearId) {
+    return stravaFetch(`/gear/${gearId}`, accessToken);
+}
+
+// ── Athlete stats (lifetime + YTD) ───────────────────────────────────────────
+export async function getAthleteStats(accessToken, athleteId) {
+    return stravaFetch(`/athletes/${athleteId}/stats`, accessToken);
+}
+
+// ── PR processing from best_efforts ─────────────────────────────────────────
+export function extractPRs(activities) {
+    const distances = {
+        "400m": 400,
+        "1/2 mile": 805,
+        "1k": 1000,
+        "1 mile": 1609,
+        "2 mile": 3219,
+        "5k": 5000,
+        "10k": 10000,
+        "15k": 15000,
+        "10 mile": 16093,
+        "20k": 20000,
+        "Half-Marathon": 21097,
+        "Marathon": 42195,
+    };
+
+    const prs = {};
+
+    for (const act of activities) {
+        if (!act.best_efforts) continue;
+        for (const effort of act.best_efforts) {
+            const name = effort.name;
+            if (!distances[name]) continue;
+            if (!prs[name] || effort.elapsed_time < prs[name].elapsed_time) {
+                prs[name] = {
+                    elapsed_time: effort.elapsed_time,
+                    date: act.start_date_local,
+                    activity_id: act.id,
+                    activity_name: act.name,
+                };
+            }
+        }
+    }
+
+    return prs;
+}
+
+// ── Cycling stats from activities ────────────────────────────────────────────
+export function getCyclingStats(activities) {
+    const rides = activities.filter(a => a.type === "Ride" || a.type === "VirtualRide");
+
+    const totalMiles = rides.reduce((s, a) => s + a.distance, 0) / 1609.344;
+    const totalTime = rides.reduce((s, a) => s + a.moving_time, 0);
+    const totalElevation = rides.reduce((s, a) => s + (a.total_elevation_gain || 0), 0) * 3.28084;
+    const longestRide = rides.length
+        ? Math.max(...rides.map(a => a.distance)) / 1609.344
+        : 0;
+
+    // Weekly ride mileage (last 12 weeks)
+    const now = new Date();
+    const weeks = [];
+    for (let i = 11; i >= 0; i--) {
+        const weekStart = new Date(now);
+        weekStart.setDate(now.getDate() - now.getDay() - i * 7);
+        weekStart.setHours(0, 0, 0, 0);
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekStart.getDate() + 7);
+
+        const weekRides = rides.filter(a => {
+            const d = new Date(a.start_date_local);
+            return d >= weekStart && d < weekEnd;
+        });
+
+        weeks.push({
+            label: `${weekStart.getMonth() + 1}/${weekStart.getDate()}`,
+            miles: weekRides.reduce((s, a) => s + a.distance / 1609.344, 0),
+        });
+    }
+
+    // Unique bikes used
+    const bikeIds = [...new Set(rides.filter(a => a.gear_id).map(a => a.gear_id))];
+
+    return { rides, totalMiles, totalTime, totalElevation, longestRide, weeks, bikeIds };
+}
