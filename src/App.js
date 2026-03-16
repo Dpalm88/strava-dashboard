@@ -6,6 +6,7 @@ import {
   getWeeklyMileage, getPRs, getTrainingLoad, getRunStats,
   metersToMiles, secondsToPace, formatDuration, metersToFeet,
   getAthleteStats, extractPRs, getCyclingStats, getGear,
+  getStarredSegments, getSegmentLeaderboard, formatSegmentTime, getTimeDiff,
 } from "./stravaApi";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
@@ -326,8 +327,8 @@ function LoadingScreen({ message }) {
 
 // ── Tab Nav ──────────────────────────────────────────────────────────────────
 function TabNav({ active, onChange }) {
-  const tabs = ["running", "cycling"];
-  const labels = { running: "🏃 Running", cycling: "🚴 Cycling" };
+  const tabs = ["running", "cycling", "segments"];
+  const labels = { running: "🏃 Running", cycling: "🚴 Cycling", segments: "🏁 Segments" };
   return (
     <div style={{ display: "flex", gap: "4px", background: "#0d1117", borderRadius: "8px", padding: "4px" }}>
       {tabs.map(t => (
@@ -604,9 +605,84 @@ function CyclingPage({ activities, gear }) {
     </div>
   );
 }
+// ── Segments Tab ──────────────────────────────────────────────────────────────
+function SegmentsTab({ segments }) {
+  if (!segments.length) return (
+    <div style={{
+      background: "#0d1117", borderRadius: "12px", border: "1px solid #1e2a36",
+      padding: "60px", textAlign: "center", fontFamily: "'Barlow Condensed', sans-serif"
+    }}>
+      <div style={{ fontSize: "2rem", marginBottom: "12px" }}>🏁</div>
+      <div style={{ color: "#e8edf2", fontSize: "1.2rem", fontWeight: 700, marginBottom: "8px" }}>
+        No starred segments found
+      </div>
+      <div style={{ color: "#6b7a8d", fontSize: "0.9rem" }}>
+        Star some segments on Strava and they'll show up here.
+      </div>
+    </div>
+  );
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+      <div style={{ background: "#0d1117", borderRadius: "12px", border: "1px solid #1e2a36", overflow: "hidden" }}>
+        <div style={{
+          padding: "16px 20px", borderBottom: "1px solid #1e2a36",
+          fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700,
+          letterSpacing: "0.08em", textTransform: "uppercase", color: "#fc4c02", fontSize: "0.85rem"
+        }}>
+          🏁 Starred Segments
+        </div>
+        {segments.map((seg, i) => (
+          <div key={seg.id} style={{
+            padding: "14px 20px",
+            borderBottom: i < segments.length - 1 ? "1px solid #1e2a36" : "none",
+            background: i % 2 === 0 ? "transparent" : "#080c10",
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+          }}>
+            <div>
+              <a href={`https://www.strava.com/segments/${seg.id}`} target="_blank" rel="noopener noreferrer"
+                style={{ fontFamily: "'Barlow Condensed', sans-serif", fontWeight: 700, fontSize: "1rem", color: "#e8edf2", textDecoration: "none" }}
+                onMouseEnter={e => e.currentTarget.style.color = "#fc4c02"}
+                onMouseLeave={e => e.currentTarget.style.color = "#e8edf2"}>
+                {seg.name}
+              </a>
+              <div style={{ display: "flex", gap: "12px", marginTop: "4px" }}>
+                <span style={{ fontSize: "0.75rem", color: "#6b7a8d" }}>
+                  📍 {(seg.distance / 1609.344).toFixed(2)} mi
+                </span>
+                <span style={{ fontSize: "0.75rem", color: "#6b7a8d" }}>
+                  ↑ {seg.total_elevation_gain ? Math.round(seg.total_elevation_gain * 3.28084) : 0} ft
+                </span>
+                <span style={{
+                  fontSize: "0.7rem", color: seg.activity_type === "Run" ? "#4ade80" : "#4a9eff",
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase"
+                }}>
+                  {seg.activity_type}
+                </span>
+              </div>
+            </div>
+            <a href={`https://www.strava.com/segments/${seg.id}`} target="_blank" rel="noopener noreferrer"
+              style={{
+                fontFamily: "'Barlow Condensed', sans-serif", fontSize: "0.75rem",
+                fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase",
+                color: "#fc4c02", textDecoration: "none",
+                border: "1px solid #fc4c02", padding: "4px 12px", borderRadius: "4px",
+                transition: "all 0.2s", whiteSpace: "nowrap",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = "#fc4c02"; e.currentTarget.style.color = "#fff"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#fc4c02"; }}>
+              View on Strava ↗
+            </a>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 // ── Dashboard ────────────────────────────────────────────────────────────────
-function Dashboard({ athlete, activities, gear, onLogout }) {
+function Dashboard({ athlete, activities, gear, segments, onLogout }) {
   const [activeTab, setActiveTab] = useState("running");
   const stats = getRunStats(activities);
   const weeklyData = getWeeklyMileage(activities);
@@ -737,6 +813,11 @@ function Dashboard({ athlete, activities, gear, onLogout }) {
           <CyclingPage activities={activities} gear={gear} />
         )}
 
+        {/* Segments Tab */}
+        {activeTab === "segments" && (
+          <SegmentsTab segments={segments} />
+        )}
+
       </div>
     </div>
   );
@@ -750,6 +831,7 @@ export default function App() {
   const [loadMsg, setLoadMsg] = useState("Connecting to Strava...");
   const [gear, setGear] = useState({});
   const [, setAthleteStats] = useState(null);
+  const [segments, setSegments] = useState([]);
 
   async function loadDashboard(accessToken) {
     setLoadMsg("Fetching athlete profile...");
@@ -766,8 +848,31 @@ export default function App() {
     const gearMap = {};
     gearResults.forEach(g => { if (g?.id) gearMap[g.id] = g; });
     setGear(gearMap);
+
+    // Load starred segments + leaderboard data
+    setLoadMsg("Loading segments...");
+    try {
+      const starred = await getStarredSegments(accessToken);
+      if (starred && starred.length) {
+        const withLeaderboard = await Promise.all(
+          starred.slice(0, 20).map(async seg => {
+            try {
+              const lb = await getSegmentLeaderboard(accessToken, seg.id);
+              return { ...seg, leaderboard: lb };
+            } catch {
+              return { ...seg, leaderboard: null };
+            }
+          })
+        );
+        setSegments(withLeaderboard);
+      }
+    } catch {
+      setSegments([]);
+    }
+
     setState("dashboard");
   }
+
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -793,6 +898,7 @@ export default function App() {
     }
   }, []);
 
+
   function handleLogout() {
     clearTokens();
     setState("login");
@@ -802,5 +908,5 @@ export default function App() {
 
   if (state === "checking" || state === "loading") return <LoadingScreen message={loadMsg} />;
   if (state === "login") return <LoginScreen />;
-  return <Dashboard athlete={athlete} activities={activities} gear={gear} onLogout={handleLogout} />;
+  return <Dashboard athlete={athlete} activities={activities} gear={gear} segments={segments} onLogout={handleLogout} />;
 }

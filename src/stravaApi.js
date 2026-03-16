@@ -247,3 +247,50 @@ export function getCyclingStats(activities) {
 
     return { rides, totalMiles, totalTime, totalElevation, longestRide, weeks, bikeIds };
 }
+
+// ── Segments ──────────────────────────────────────────────────────────────────
+export async function getStarredSegments(accessToken, perPage = 50) {
+    return stravaFetch(`/segments/starred?per_page=${perPage}`, accessToken);
+}
+
+export async function getSegmentLeaderboard(accessToken, segmentId) {
+    return stravaFetch(
+        `/segments/${segmentId}/leaderboard?per_page=1&context_entries=0`,
+        accessToken
+    );
+}
+
+export function formatSegmentTime(seconds) {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    if (h > 0) return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+    return `${m}:${String(s).padStart(2, "0")}`;
+}
+
+export function getTimeDiff(seconds1, seconds2) {
+    const diff = seconds1 - seconds2;
+    if (diff <= 0) return "KOM! 🏆";
+    const m = Math.floor(diff / 60);
+    const s = diff % 60;
+    if (m > 0) return `+${m}m ${s}s`;
+    return `+${s}s`;
+}
+
+export function getSegmentPRs(activities) {
+    const prs = {};
+    for (const act of activities) {
+        if (!act.segment_efforts) continue;
+        for (const effort of act.segment_efforts) {
+            const id = effort.segment.id;
+            if (!prs[id] || effort.elapsed_time < prs[id].elapsed_time) {
+                prs[id] = {
+                    elapsed_time: effort.elapsed_time,
+                    date: act.start_date_local,
+                    activity_name: act.name,
+                };
+            }
+        }
+    }
+    return prs;
+}
