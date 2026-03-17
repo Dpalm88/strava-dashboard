@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/strava-dashboard/static/css/main.323d7611.css",
-    "main.js": "/strava-dashboard/static/js/main.9cf6085a.js",
-    "static/js/453.a3548b9d.chunk.js": "/strava-dashboard/static/js/453.a3548b9d.chunk.js",
-    "index.html": "/strava-dashboard/index.html",
-    "main.323d7611.css.map": "/strava-dashboard/static/css/main.323d7611.css.map",
-    "main.9cf6085a.js.map": "/strava-dashboard/static/js/main.9cf6085a.js.map",
-    "453.a3548b9d.chunk.js.map": "/strava-dashboard/static/js/453.a3548b9d.chunk.js.map"
+    "main.css": "/static/css/main.323d7611.css",
+    "main.js": "/static/js/main.bff37a4d.js",
+    "static/js/453.a3548b9d.chunk.js": "/static/js/453.a3548b9d.chunk.js",
+    "index.html": "/index.html",
+    "main.323d7611.css.map": "/static/css/main.323d7611.css.map",
+    "main.bff37a4d.js.map": "/static/js/main.bff37a4d.js.map",
+    "453.a3548b9d.chunk.js.map": "/static/js/453.a3548b9d.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.323d7611.css",
-    "static/js/main.9cf6085a.js"
+    "static/js/main.bff37a4d.js"
   ]
 }
