@@ -2,7 +2,7 @@
 
 A personal athlete analytics dashboard built with React that visualizes your Strava training data in real time.
 
-🔗 **[Live Demo](https://Dpalm88.github.io/strava-dashboard)**
+🔗 **[Live Demo](https://strava-dashboard-dp.pages.dev)**
 
 ![Dashboard Preview](public/dashboard-preview.png)
 
@@ -28,7 +28,7 @@ A personal athlete analytics dashboard built with React that visualizes your Str
 | Authentication | Strava OAuth2 with token refresh |
 | Maps | Leaflet.js + React-Leaflet + CARTO dark tiles |
 | Charts | Recharts |
-| Deployment | GitHub Pages |
+| Deployment | Cloudflare Pages |
 
 ---
 
@@ -56,12 +56,11 @@ npm start
 ## How It Works
 
 1. User authenticates via Strava OAuth2
-2. App fetches last 100 activities from Strava API
+2. App fetches last 200 activities from Strava API
 3. Training load calculated using CTL/ATL/TSB methodology
 4. Routes decoded from Strava's encoded polyline format
 5. All data visualized in a responsive dark dashboard
 
 ---
 
-*Built by David Palm — ultrarunner & cloud infrastructure engineer*# Cloudflare Pages deployment
- 
+*Built by David Palm — ultrarunner & cloud infrastructure engineer*
