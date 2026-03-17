@@ -63,4 +63,4 @@ npm start
 
 ---
 
-*Built by David Palm — ultrarunner & cloud infrastructure engineer*
+*Built by David Palm — ultrarunner & cloud infrastructure engineer*# Cloudflare Pages deployment
